@@ -2,8 +2,17 @@ import * as React from 'react';
 import * as FileSystem from 'expo-file-system';
 import { Text, View, StyleSheet, Button, StatusBar } from 'react-native';
 import { Audio } from 'expo-av';
+import AudioRecord from 'react-native-audio-record';
 
 export default function App() {
+  const options = {
+    sampleRate: 16000, // default 44100
+    channels: 1, // 1 or 2, default 1
+    bitsPerSample: 16, // 8 or 16, default 16
+    audioSource: 6, // android only (see below)
+    wavFile: 'test.wav', // default 'audio.wav'
+  };
+
   const [recording, setRecording] = React.useState();
 
   async function startRecording() {
@@ -42,12 +51,34 @@ export default function App() {
       .catch((error) => console.log(error));
   }
 
+  async function start() {
+    AudioRecord.init(options);
+    setRecording(recording);
+    AudioRecord.start();
+  }
+
+  async function stop() {
+    setRecording(undefined);
+    AudioRecord.stop();
+    audioFile = await AudioRecord.stop();
+  }
+
+  function show() {
+    AudioRecord.on('data', (data) => {
+      console.log('audioFile is ', audioFile);
+      console.log('data is', data);
+    });
+  }
   return (
     <View style={styles.container}>
       <Text>Audio Testing</Text>
       <Button
         title={recording ? 'Stop Recording' : 'Start Recording'}
-        onPress={recording ? stopRecording : startRecording}
+        onPress={recording ? stop : start}
+      />
+      <Button
+        title={recording ? 'Stop Recording' : 'Start Recording'}
+        onPress={show}
       />
     </View>
   );
